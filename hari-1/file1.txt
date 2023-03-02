@@ -1,0 +1,864 @@
+Cluster PROXMOX :
+pvecm status 
+Server 1:
+pvecm create cluster01
+
+Server 2:
+pvecm add SERVER-01(hostname atau ip address)
+pvecm status
+
+Server 3:
+pvecm add SERVER-01(hostname atau ip address)
+pvecm status
+
+================================
+cd /etc/pve
+ls -l
+
+cat ./storage.cfg
+echo "hello world from server 1" >> ./test.log
+cat ./test.log
+echo "hello world from server 2" >> ./test.log
+cat ./test.log
+echo "hello world from server 3" >> ./test.log
+
+rm -rf /etc/pve/test.log
+
+Install Ceph along with Proxmox :
+configure /etc/hosts
+
+apt update dan apt upgrade
+
+pvecm create
+
+pvecm add
+
+pveceph install
+
+pveceph init -network 10.23.0.1/22
+
+pveceph createmon
+
+pveceph createosd /dev/sdb (/dev/devname)
+
+create pool use web interface. Dont forget to tick "add storage"
+
+dd if=/dev/zero of=/dev/sdb bs=1M count=200
+
+ceph-disk zap /dev/sdb
+
+pveceph createosd /dev/sdb
+
+ceph osd tree
+
+
+HA Cluster :
+
+ha-manager status
+
+ps ax | grep crm
+
+pve-ha-crm status
+
+pve-ha-lrm
+
+cat /etc/pve/ha/manager_status
+
+cat /etc/pve/ha/manager_status | json_pp
+
+mount
+
+watch 'cat /etc/pve/ha/manager_status | json_pp'
+
+while true; do cat /etc/pve/ha/manager_status | json_pp; echo "==============================="; sleep 10; done
+
+cat /etc/pve/ha/manager_status | json_pp
+
+cat /etc/pve/nodes/server3/lrm_status | json_pp
+
+lsmod | grep -i dog
+
+journalctl -u watchdog-mux.service
+
+cat /var/log/kern.log | grep -i dog
+
+watch journalctl -u watchdog-mux.service
+
+ha-manager status
+
+while true; do cat /etc/pve/ha/manager_status | json_pp; echo "================================="; sleep 10; done
+
+cat /etc/pve/ha/manager_status
+
+cat /etc/pve/ha/manager_status | json_pp
+
+qm start 100
+
+pvecm status
+
+ha-manager status
+
+
+
+server 1 :
+
+ceph pg dump pgs_brief
+
+lsblk
+
+fdisk /dev/sdb
+
+p,q
+
+lsblk
+
+ls -l /var/lib/ceph/osd/ceph-0/
+
+ls -l /var/lib/ceph/osd/ceph-0/block
+
+man rados 
+man rbd
+man ceph
+
+echo "This is test file" > ./test.txt
+
+man rados 
+
+rados -p poolone put test.txt ./test.txt
+
+rados -p poolone ls | grep -i test
+
+rados -p poolone get test.txt fromceph
+
+cat ./fromceph
+
+ceph mon getmap > /tmp
+
+ceph mon getmap > /tmp/monmap
+
+monmaptool --print /tmp/monmap
+
+ceph osd getmap > /tmp/osdmap
+
+osdmaptool --print /tmp/osdmap
+
+ceph pg dump pgs_brief
+
+monmaptool --print /tmp/monmap
+
+osdmaptool --print /tmp/osdmap
+
+ceph osd map poolone test.txt
+
+ceph osd map poolone 123.log
+
+server 2 :
+
+ceph-objectstore-tool --help
+
+lsblk
+
+ceph-objectstore-tool --data-path /var/lib/ceph/osd/ceph-1/ --op list
+
+ceph osd set mount (moout)
+
+ceph -s
+
+systemctl stop ceph-osd@1.service
+
+ceph osd tree
+
+ceph-objectstore-tool --data-path /var/lib/ceph/osd/ceph-1/ --op list | grep "2.8"
+
+ceph-objectstore-tool --data-path /var/lib/ceph/osd/ceph-1/ --op fuse --mountpoint /mnt &
+
+mounting fuse at /mnt ...
+
+cd /mnt
+
+ls -l
+
+cd ./2.8_head/
+ls -l
+
+cd ./all
+ls -l
+
+cd ./#2\:1086d0d1\:\:\:test.txt\:head#/
+ls -l
+cat ./data
+
+ps ax | grep -i ceph-ob
+
+kill 55861
+ls
+
+systemctl start ceph-osd@1
+cd /
+ceph -s
+
+ceph osd tree
+
+https://ceph.com/pgcalc/
+
+=============================================
+server 1 :
+
+systemctl stop ceph-osd@0
+
+systemctl start ceph-osd@0
+
+ceph -s -w
+
+cat /var/log/ceph/ceph.log
+
+ceph pg dump pgs_brief | grep -i inconsist
+
+rados list-inconsistent-obj 2.8 --format=json-pretty
+
+ceph pg repair 2.8
+
+systemctl stop ceph-osd@0
+
+ceph -s -w
+
+
+server 2 :
+
+systemctl stop ceph-osd@1
+
+ceph.
+
+ceph pg  dum^Cstuck unclean | wc -l
+ceph pg dump pgs_brief
+
+systemctl start ceph-osd@1
+
+
+==================================================
+Video 11 : RBD
+==================================================
+
+server 1:
+man rbd
+
+rados -p poolone ls
+
+rados -p poolone ls | wc -l
+
+rbd -p poolone info vm-100-disk-0
+
+ceph osd map poolone rbd_data.4f6896b8b4567.00000000000000b9
+
+ceph osd map poolone rbd_data.4f6896b8b4567.0000000000000024
+
+ceph osd map poolone some-vm-image.img
+
+man rbd
+
+rbd -p poolone ls
+
+rbd -p poolone du
+
+rbd help export
+
+rbd export poolone/vm-100-disk-0 /root/vm-100-disk-0.img
+
+ls -lh /root
+
+man qemu-nbd
+
+modprobe nbd
+
+qemu-nbd -c /dev/nbd0 /root/vm-100-disk.img
+
+lsblk
+
+mount /dev/nbd0p1 /mnt
+
+ls -l /mnt
+
+cat /mnt/boot/
+
+cat /mnt/boot/grub/grub.cfg
+
+umount /mnt
+
+qemu-nbd -d /dev/nbd0
+
+lsblk
+
+rbd help map
+
+rbd map poolone/vm-100-disk-0
+
+rbd feature disable poolone/vm-100-disk-0 object-map fast-diff
+
+rbd map poolone/vm-100-disk-0
+
+lsblk
+
+mount /dev/rbd0p1 /mnt
+
+ls -l /mnt
+
+umount /mnt
+
+rbd unmap poolone/vm-100-disk-0
+
+rbd feature enable poolone/vm-100-disk-0 object-map fast-diff
+
+rbd help create
+
+rbd create poolone/vm-100-disk-10 --object-size=1M --size=500M
+
+rbd info poolone/vm-100-disk-10
+
+qm rescan -vmid 100
+
+Too WEB GUI :
+VM 100 :
+Hardware -> Unused :
+Bus/Device = VirtIO Block 1 
+Cache = Write Back (unsafe) 
+
+nano /etc/pve/nodes/SERVER-01/qemu-server/100.conf
+#command:
+#unused0: poolone:vm-100-disk-10
+add :
+virtio1: poolone:vm-100-disk-10, cache=writeback
+
+CTRL+X+Y+ENTER -> Untuk save
+
+qm rescan -vmid 100
+
+server 2:
+
+
+
+
+=================================================
+Video 12 : OSD Replacement
+=================================================
+HD Tune Pro
+
+server 1:
+systemctl stop ceph-osd@0
+
+systemctl status ceph-osd@0
+
+ceph osd destroy osd.0 --yes-i-really-mean-it
+
+ceph osd crush remove osd.0
+
+ceph osd tree
+
+ceph -s -w 
+
+ceph -s
+
+ceph osd rm 0
+
+ceph osd tree
+
+lsblk
+
+umount /var/lib/ceph/osd/ceph-0
+
+lsblk
+
+Too WEB GUI :
+SERVER-01
+Add Disk or Buat ulang Disk:
+10GB HDD
+Hardware -> Unused :
+Bus/Device = VirtIO Block 1 
+Cache = Write Back 
+
+lsblk
+
+ceph-disk zap /dev/sdb
+
+fdisk /dev/sdb
+
+p,q
+
+partprobe
+
+pveceph createosd /dev/sdb
+
+ceph osd tree
+
+systemctl start ceph-osd@0
+
+ceph osd tree
+
+ceph -s -w
+
+ceph health
+
+lsblk
+
+fdisk /dev/sdb
+
+p,q
+
+ls -l /var/lib/ceph/osd/ceph-0
+
+lsblk -o NAME,PARTUUID
+
+
+Server 2 :
+Too WEB GUI :
+SERVER-02
+Add Disk:
+20GB HDD
+Bus/Device = VirtIO Block 1 
+Cache = Write Back 
+
+lsblk
+
+systemctl stop ceph-osd@1
+
+systemctl status ceph-osd@1
+
+ceph osd destroy osd.1 --yes-i-really-mean-it
+
+ceph osd tree
+
+ceph osd crush rm osd.1
+
+ceph -s -w 
+
+ceph -s
+
+ceph osd rm osd.1
+
+lsblk
+
+umount /var/lib/ceph/osd/ceph-1
+
+lsblk
+
+ceph-disk zap /dev/sdb
+
+pveceph createosd /dev/sdb --journal_dev /dev/sdc
+
+ceph osd tree
+
+systemctl start ceph-osd@1
+
+ceph osd tree
+
+lsblk
+
+ls -l /var/lib/ceph/osd/ceph-1
+
+lsblk -O NAME,PARTUUID
+
+Server 3 :
+ceph osd tree
+
+ceph -s
+
+lsblk
+
+systemctl stop ceph-osd@2
+
+systemctl status ceph-osd@2
+
+ceph osd tree
+
+ceph osd destroy osd.2 --yes-i-really-mean-it
+
+ceph osd tree
+
+ceph osd crush rm osd.2
+
+ceph -s -w
+
+ceph -s
+
+ceph osd rm osd.2
+
+lsblk
+
+dd if=/dev/zero of=/dev/sdb bs=1M count=200
+
+lsblk
+
+umount /var/lib/ceph/osd/ceph-2
+
+dd if=/dev/zero of=/dev/sdb bs=1M count=200
+
+lsblk 
+
+partprobe
+
+vgcreate osd-data /dev/sdb
+
+lvcreate -l 100%FREE -n data osd-data
+
+vgcreate osd-db /dev/sdc
+
+lvcreate -l 100%FREE -n db-01 osd-db
+
+vgs
+
+lvs
+
+ceph-volume lvm create --bluestore --data osd-data/data --block.db osd-db/db-01
+
+ceph osd tree
+
+dmsetup info -C
+
+dmsetup remove -> (untuk next time)
+
+systemctl stop ceph-osd@2
+
+ceph osd tree
+
+ceph osd destroy osd.2 --yes-i-really-mean-it
+
+ceph -s
+
+ceph osd crush remove osd.2
+
+ceph -s -w
+
+ceph -s 
+
+ceph osd rm osd.2
+
+lsblk
+
+mount
+
+umount /var/lib/ceph/osd/ceph-2
+
+dmsetup info -C
+
+dmsetup remove osd--data-data 
+
+dmsetup remove osd--db-db-01
+
+lsblk 
+
+ceph-disk zap /dev/sdb
+
+ceph-disk zap /dev/sdc
+
+pveceph createosd /dev/sdb --journal_dev /dev/sdc
+
+ceph osd tree
+
+=======================================================
+Video 13 : Cluster performance troubleshooting
+=======================================================
+Server 1 :
+ceph pg dump pgs_brief
+
+ceph health detail
+
+lsblk
+
+ceph osd perf
+
+watch 'ceph osd perf'
+
+top
+free -h
+
+apt-get install sysstat
+
+man iostat
+
+iostat
+
+iostat  -mpx 5
+
+apt-get install iotop
+iotop
+iotop -o
+iotop -oba
+
+man sar
+nano /etc/default/sysstat
+#ubah
+ENABLE="false"
+#to
+ENABLE="true"
+
+CTRL+X+Y+ENTER
+
+systemctl start sysstat
+systemctl status sysstat
+
+sar
+sar -b
+sar -bdp
+
+apt-get install iftop
+
+iftop --help
+
+iftop -i ens3 :
+#press 'n' button to disable name resolutions
+#press 'p' button to display port
+
+netstat -anlp | grep ':5404'
+
+dmesg
+
+cd /var/log
+ls -l
+cd ./ceph
+ls -l
+cat ./ceph-osd.0.log
+cat ./ceph-osd.0.log | grep -i err
+clear
+
+ceph osd tree
+
+ceph -s -w
+
+cd /
+
+tail -n 1000 /var/log/syslog
+
+To Web GUI :
+SERVER-01:
+Hardware -> CD/DVD -> Do Not use any video
+Processor -> Socket 1, Core 2
+
+
+ha-manager status
+
+pvecm status
+
+qm list
+qm unlock 100
+qm start 100
+
+
+#Server 2 :
+ha-manager status
+ha-manager set vm:100 -state disabled
+
+To WEB GUI : 
+SERVER-02 :
+HA -> Groups -> Edit Resources -> Request State : Disable
+
+cat /var/log/syslog
+
+To WEB GUI :
+SERVER-02 :
+VM-100 -> Hardware -> CD/DVD -> Do not use any media.
+Datacenter -> HA -> Edit Resources -> Started
+
+mv /etc/pve/nodes/SERVER-01/qemu-server/100.conf /etc/pve/nodes/SERVER-02/qemu-server/
+
+ls -l /etc/pve/nodes/SERVER-02/qemu-server/
+
+pvecm delnode SERVER-01 (untuk nanti)
+
+Server 3 :
+
+
+=============================================================
+Video 14 : Proxmox and Ceph RBD Backups
+=============================================================
+#Server 1:
+
+To WEB GUI :
+SERVER-01 :
+Datacenter -> Storage -> Add Directory
+ID: backups, Directory: /mnt/backups, Content: VZDump backup file, Max Backups: 7, Add.
+
+Datacenter -> Backup -> Add 
+Node : All, Storage : Backups, Day of Week: Saturday, Thursday, Tuesday.
+selection mode: All, Send email to : tome@me.com, Email Notif: Always, Compression: LZO(fast)
+Mode : Snapshoot, Enable : Ceklis, Create.
+
+Options 1:
+Imcremental Snapshoot With RBD
+examples:
+rbd export-diff --from-snap snap1 pool/image@snap2 pool image snap1 to snap2 ....
+
+Options 2:
+backy2.com
+eve4pve-barc (Github EnterpriseVE/eve4pve-barc)
+
+Installatos Enterprise VE/eve4pve-barc:
+
+release -> copy link eve4pve-barc-version-all.deb
+
+wget link
+
+dpkg ./eve4pve-barc-version-all.deb
+
+eve4pve-barc
+
+eve4pve-barc create --vmid=all --label=daily --keep=7 --path=/mnt/backups --syslog --unprotect-snap
+
+nano /etc/cron.d/eve4pve-barc (tidak ada yang diubah)
+
+eve4pve-barc backup --vmid=all --label='daily' --path=/mnt/backups --keep=7 --unprotect-snap --syslog
+
+ls -l /mnt/backups/barc/100/daily/
+
+eve4pve-barc backup --vmid=all --label='daily' --path='/mnt/backups' --keep=7 --unprotect-snap --syslog
+
+ls -l /mnt/backups/barc/100/daily/
+
+ls -lh /mnt/backups/barc/100/daily/
+
+eve4pve-barc restore --vmid=100 --label=daily --path=/mnt/backups
+
+poolone.vm-100-disk-0, 19-03-12_16:13:41, poolone
+vm-100-disk-101, kemudian yes.
+
+rbd -p poolone ls
+
+qm rescan -vmid 100
+
+To Web GUI :
+SERVER-01:
+VM-100 -> Hardware -> Unused Disk 1: poolone:vm-100-disk-101 -> Remove
+
+
+
+
+
+
+
+
+
+
+
+
+#Server 2:
+
+#Server 3:
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
